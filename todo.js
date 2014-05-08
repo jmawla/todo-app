@@ -5,7 +5,7 @@ $(document).ready(function() {
 //	alert(inputText);
 
 	function setListeners() {
-
+		//keystroke listener
 		var inputText = '';
 		$('#new-todo').keyup(function(event) {
 			inputText = $(this).val();
@@ -14,6 +14,15 @@ $(document).ready(function() {
 				alert(inputText);
 			}
 		});
+
+		//double click listener
+		var textWindow = $('#new-todo');
+		textWindow.dblclick(function() {
+			//will enable editing in exiting textWindow
+			alert("doubleclick");
+		})
+
+
 	};
 
 	setListeners();
