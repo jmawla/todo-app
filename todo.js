@@ -1,28 +1,41 @@
 $(document).ready(function() {
+	//globals
+	var CR_KEY = 13;
+	var ESC_KEY = 27;
+	var inputStorage = [];	//array of objects for storage
+
 	var todoFunc = {
-		uuid: function () {
-					/*jshint bitwise:false */
-					var i, random;
-					var uuid = '';
+		uuid: function () { 
+			/*jshint bitwise:false */
+			var i, random;
+			var uuid = '';
 
-					for (i = 0; i < 32; i++) {
-						random = Math.random() * 16 | 0;
-						if (i === 8 || i === 12 || i === 16 || i === 20) {
-							uuid += '-';
-						}
-						uuid += (i === 12 ? 4 : (i === 16 ? (random & 3 | 8) : random)).toString(16);
-					}
-
-					return uuid;
-				},
+			for (i = 0; i < 32; i++) {
+				random = Math.random() * 16 | 0;
+				if (i === 8 || i === 12 || i === 16 || i === 20) {
+					uuid += '-';
+				}
+				uuid += (i === 12 ? 4 : (i === 16 ? (random & 3 | 8) : random)).toString(16);
+				}
+			return uuid;
+		},
 
 		keyPressed: function(e) {
-			console.log(e);
-			if(e.keyCode === 13) {
+			if(e.keyCode === CR_KEY) {
 				var entry = $('#new-todo').val();
 				$('.newInput li').clone().appendTo('#todo-list');
 				$('#todo-list li:last-child label').text(entry);
 				$('#new-todo').val('');
+			} else if(e.keyCode === ESC_KEY) {
+				console.log('ESC');
+			}
+		},
+
+		saveInput: function(inputText) {
+			var getID = todoFunc.uuid();
+			var todoInput = {
+				'id' = getID,
+				'name' = inputText
 			}
 
 		}
