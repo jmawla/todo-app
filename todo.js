@@ -1,26 +1,55 @@
 $(document).ready(function() {
+	var todoFunc = {
+		uuid: function () {
+					/*jshint bitwise:false */
+					var i, random;
+					var uuid = '';
 
+					for (i = 0; i < 32; i++) {
+						random = Math.random() * 16 | 0;
+						if (i === 8 || i === 12 || i === 16 || i === 20) {
+							uuid += '-';
+						}
+						uuid += (i === 12 ? 4 : (i === 16 ? (random & 3 | 8) : random)).toString(16);
+					}
 
-//	var inputText = $('input').text();
-//	alert(inputText);
+					return uuid;
+				},
 
-	var func = {
-		todoInput: function() {
-
-		},
-
-		todoDblClick: function() {
-
-		},
-
-		todoChkMrk: function() {
+		keyPressed: function(e) {
+			console.log(e);
+			if(e.keyCode === 13) {
+				var entry = $('#new-todo').val();
+				$('.newInput li').clone().appendTo('#todo-list');
+				$('#todo-list li:last-child label').text(entry);
+				$('#new-todo').val('');
+			}
 
 		}
+
 	};
 
+	var todoListners = {
+		mainInput: function() {
+			$('#new-todo').keyup(function(e) {
+				todoFunc.keyPressed(e);
+			});
 
+		},
 
-	function setListeners() {
+		dblClick: function() {
+
+		},
+
+		chkMrk: function() {
+
+		}
+
+	};
+
+	todoListners.mainInput();
+
+/*	function setListeners() {
 		//keystroke listener
 		var inputText = '';
 		$('#new-todo').keyup(function(e) {
@@ -53,6 +82,5 @@ $(document).ready(function() {
 		//all/active/completed
 	};
 
-	setListeners();
-
+	setListeners();*/
 });
