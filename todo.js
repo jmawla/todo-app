@@ -23,21 +23,37 @@ $(document).ready(function() {
 		keyPressed: function(e) {
 			if(e.keyCode === CR_KEY) {
 				var entry = $('#new-todo').val();
-				$('.newInput li').clone().appendTo('#todo-list');
-				$('#todo-list li:last-child label').text(entry);
-				$('#new-todo').val('');
+				this.saveInput(entry);	// save entry into local storage
+				this.addEntry(entry); // put entry into HTML page
 			} else if(e.keyCode === ESC_KEY) {
 				console.log('ESC');
 			}
 		},
 
+		addEntry: function(entry) {
+				$('.newInput li').clone().appendTo('#todo-list');
+				$('#todo-list li:last-child label').text(entry);
+				$('#new-todo').val('');
+		},
+
 		saveInput: function(inputText) {
 			var getID = todoFunc.uuid();
 			var todoInput = {
-				'id' = getID,
-				'name' = inputText
+				'id' : getID,
+				'name' : inputText
 			}
+			inputStorage.push(todoInput);
+			// Re-serialize the array back into a string and store it in localStorage
+			localStorage.setItem('todos', JSON.stringify(inputStorage));
+		},
 
+		populateStorage: function() {
+			if(localStorage && localStorage.length >0) {
+				var tmpStorage = JSON.parse(localStorage.getItem("todos"));
+				for(var key=0 ; key <= localStorage.length ; key++) {
+					this.addEntry(tmpStorage[key].name);
+				}
+			}
 		}
 
 	};
@@ -60,6 +76,7 @@ $(document).ready(function() {
 
 	};
 
+	todoFunc.populateStorage();
 	todoListners.mainInput();
 
 /*	function setListeners() {
