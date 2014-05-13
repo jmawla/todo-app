@@ -1,5 +1,6 @@
 $(document).ready(function() {
 	//globals
+	var itemCounter = 0;
 	var CR_KEY = 13;
 	var ESC_KEY = 27;
 	var inputStorage = [];	//array of objects for storage
@@ -34,6 +35,7 @@ $(document).ready(function() {
 				$('.newInput li').clone().appendTo('#todo-list');
 				$('#todo-list li:last-child label').text(entry);
 				$('#new-todo').val('');
+				$('#todo-count .todoCount').text(++itemCounter);
 		},
 
 		saveInput: function(inputText) {
@@ -49,9 +51,11 @@ $(document).ready(function() {
 
 		populateStorage: function() {
 			if(localStorage && localStorage.length >0) {
-				var tmpStorage = JSON.parse(localStorage.getItem("todos"));
-				for(var key=0 ; key <= localStorage.length ; key++) {
-					this.addEntry(tmpStorage[key].name);
+//				var ts = localStorage.getItem("todos");
+				inputStorage = JSON.parse(localStorage.getItem("todos"));
+				for(var key=0 ; key < inputStorage.length ; key++) {
+//					console.log(localStorage.key(key));
+					this.addEntry(inputStorage[key].name);
 				}
 			}
 		}
