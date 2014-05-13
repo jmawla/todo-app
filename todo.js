@@ -36,13 +36,16 @@ $(document).ready(function() {
 				$('#todo-list li:last-child label').text(entry);
 				$('#new-todo').val('');
 				$('#todo-count .todoCount').text(++itemCounter);
+				$('#footer').show();
 		},
 
 		saveInput: function(inputText) {
 			var getID = todoFunc.uuid();
+			var itemStatus = 'false';
 			var todoInput = {
 				'id' : getID,
-				'name' : inputText
+				'name' : inputText,
+				'status' : itemStatus
 			}
 			inputStorage.push(todoInput);
 			// Re-serialize the array back into a string and store it in localStorage
@@ -51,12 +54,15 @@ $(document).ready(function() {
 
 		populateStorage: function() {
 			if(localStorage && localStorage.length >0) {
+//				$('#footer').show();
 //				var ts = localStorage.getItem("todos");
 				inputStorage = JSON.parse(localStorage.getItem("todos"));
 				for(var key=0 ; key < inputStorage.length ; key++) {
 //					console.log(localStorage.key(key));
 					this.addEntry(inputStorage[key].name);
 				}
+			} else {
+				$('#footer').hide();
 			}
 		}
 
@@ -71,17 +77,36 @@ $(document).ready(function() {
 		},
 
 		dblClick: function() {
+//			var liDbl = $(' which one?')
+//			liDbl.dblclick(function) {
+//				liDbl.toggleClass();
+
+//			}
 
 		},
 
-		chkMrk: function() {
+		xClick: function() {
+			$('#todo-list li .destroy').click(function() {
+				$(this).removeClass('destroy');
+			})
 
+		},
+
+		mouseHvr: function() {
+		},
+
+		oneClick: function() {
+			$('#todo-list li .toggle').click(function() {
+				$(this).closest('li').toggleClass('completed');
+			})
 		}
 
 	};
 
 	todoFunc.populateStorage();
 	todoListners.mainInput();
+	todoListners.oneClick();
+	todoListners.xClick();
 
 /*	function setListeners() {
 		//keystroke listener
