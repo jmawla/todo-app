@@ -25,31 +25,37 @@ $(document).ready(function() {
 			if(e.keyCode === CR_KEY) {
 				var entry = $('#new-todo').val();
 				this.saveInput(entry);	// save entry into local storage
-				this.addEntry(entry); // put entry into HTML page
 			} else if(e.keyCode === ESC_KEY) {
 				console.log('ESC');
 			}
 		},
-
-		addEntry: function(entry) {
+		// put entry into HTML page
+		addEntry: function(entry, id, status) {
 				$('.newInput li').clone().appendTo('#todo-list');
 				$('#todo-list li:last-child label').text(entry);
+				$('#todo-list li:last-child').attr('data-id',id);
+				if(status) {
+					$('#todo-list li:last-child').addClass('completed');
+					$('#todo-list li:last-child .toggle').attr('checked', true);
+				}
 				$('#new-todo').val('');
 				$('#todo-count .todoCount').text(++itemCounter);
 				$('#footer').show();
 		},
-
+		// save entry into local storage
 		saveInput: function(inputText) {
 			var getID = todoFunc.uuid();
-			var itemStatus = 'false';
+			var status = false;
 			var todoInput = {
 				'id' : getID,
 				'name' : inputText,
-				'status' : itemStatus
+				'completed' : status
 			}
 			inputStorage.push(todoInput);
 			// Re-serialize the array back into a string and store it in localStorage
 			localStorage.setItem('todos', JSON.stringify(inputStorage));
+			this.addEntry(inputText, getID, status);
+			todoListners.addListItemListener(getID);
 		},
 
 		populateStorage: function() {
@@ -59,10 +65,20 @@ $(document).ready(function() {
 				inputStorage = JSON.parse(localStorage.getItem("todos"));
 				for(var key=0 ; key < inputStorage.length ; key++) {
 //					console.log(localStorage.key(key));
-					this.addEntry(inputStorage[key].name);
+					this.addEntry(inputStorage[key].name, inputStorage[key].id, inputStorage[key].completed);
+					todoListners.addListItemListener(inputStorage[key].id);
 				}
 			} else {
 				$('#footer').hide();
+			}
+		},
+
+		updateStatus: function(id, status) {
+			for(var i=0 ; i<inputStorage.length ; i++) {
+				if(inputStorage[i].id == id) {
+					inputStorage[i].completed = status;
+				}
+				localStorage.setItem('todos', JSON.stringify(inputStorage));
 			}
 		}
 
@@ -75,20 +91,62 @@ $(document).ready(function() {
 			});
 
 		},
+		//add listener to list item based on its id
+		//to take care of double click editing, single click check, and x delete click
+		addListItemListener: function(id) {
+			//double click
+			$("li[data-id *= '" + id + "']").on('dblclick', 'label', function(event) {
+				console.log('dblclick listener');
+			});
+			//check click
+			$("li[data-id *= '" + id + "']").click(function(e) {
+				if(e.target.nodeName == "INPUT") {
+					console.log('singleclick listner');
+					var item = $(this).closest('li');
+					if(item.hasClass('completed')) {
+						todoFunc.updateStatus(id, false);
+						itemCounter++;
+					} else {
+						todoFunc.updateStatus(id, true);
+						itemCounter--;
+					}
+					$('#todo-count .todoCount').text(itemCounter);
+					item.toggleClass('completed');
+				}
+			});
+		}
 
-		dblClick: function() {
-//			var liDbl = $(' which one?')
-//			liDbl.dblclick(function) {
-//				liDbl.toggleClass();
+	};
 
-//			}
+	todoFunc.populateStorage();
+	todoListners.mainInput();
+//	todoListners.oneClick();
+//	todoListners.xClick();
+//	todoListners.doubleClick();
+
+/*		doubleClick: function() {
+			var liDbl = $('#todo-list label');
+			console.log("double click");
+			liDbl.on('dblclick', 'li', function() {
+				$("<input type='text'>").appendTo(this).focus();
+			});
+//			alert($(this).closest('li').text(liDbl));
+	//		liDbl.dblclick(function(e) {
+//				alert($(this).closest('li').text(liDbl));
+	//			alert(e.target.textContent);
+	//			e.toggleClass();
+
+	//		});
 
 		},
 
 		xClick: function() {
-			$('#todo-list li .destroy').click(function() {
-				$(this).removeClass('destroy');
-			})
+			var tmp = $('#todo-list li button'); 
+			tmp.click(function(e) {
+				alert(e.target.nodeName);
+				alert($(this).closest('li'));
+//				$(this).closest('li').removeClass();
+//			})
 
 		},
 
@@ -99,14 +157,7 @@ $(document).ready(function() {
 			$('#todo-list li .toggle').click(function() {
 				$(this).closest('li').toggleClass('completed');
 			})
-		}
-
-	};
-
-	todoFunc.populateStorage();
-	todoListners.mainInput();
-	todoListners.oneClick();
-	todoListners.xClick();
+		},*/
 
 /*	function setListeners() {
 		//keystroke listener
