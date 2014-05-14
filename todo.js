@@ -1,6 +1,7 @@
 $(document).ready(function() {
 	//globals
 	var itemCounter = 0;
+	var checkedCounter = 0;
 	var CR_KEY = 13;
 	var ESC_KEY = 27;
 	var inputStorage = [];	//array of objects for storage
@@ -37,9 +38,11 @@ $(document).ready(function() {
 				if(status) {
 					$('#todo-list li:last-child').addClass('completed');
 					$('#todo-list li:last-child .toggle').attr('checked', true);
+					checkedCounter++;
 				}
 				$('#new-todo').val('');
-				$('#todo-count .todoCount').text(++itemCounter);
+//				$('#todo-count .todoCount').text(++itemCounter);
+				footerUpdate.completedUpdate(++itemCounter, checkedCounter, status);
 				$('#footer').show();
 		},
 		// save entry into local storage
@@ -57,14 +60,11 @@ $(document).ready(function() {
 			this.addEntry(inputText, getID, status);
 			todoListners.addListItemListener(getID);
 		},
-
+		// reload entries from storage
 		populateStorage: function() {
 			if(localStorage && localStorage.length >0) {
-//				$('#footer').show();
-//				var ts = localStorage.getItem("todos");
 				inputStorage = JSON.parse(localStorage.getItem("todos"));
 				for(var key=0 ; key < inputStorage.length ; key++) {
-//					console.log(localStorage.key(key));
 					this.addEntry(inputStorage[key].name, inputStorage[key].id, inputStorage[key].completed);
 					todoListners.addListItemListener(inputStorage[key].id);
 				}
@@ -79,6 +79,18 @@ $(document).ready(function() {
 					inputStorage[i].completed = status;
 				}
 				localStorage.setItem('todos', JSON.stringify(inputStorage));
+			}
+		}
+	};
+
+	var footerUpdate = {
+		completedUpdate: function(count, chkcount, status) {
+			$('#todo-count .todoCount').text(count);
+			$('#clear-completed').text('Clear Completed (' + chkcount + ')');
+			if( chkcount>0 ) {
+				$('#clear-completed').css({'display':'block'});
+			} else {
+				$('#clear-completed').css({'display':'none'});
 			}
 		}
 
@@ -103,14 +115,19 @@ $(document).ready(function() {
 				if(e.target.nodeName == "INPUT") {
 					console.log('singleclick listner');
 					var item = $(this).closest('li');
+					var compStatus;
 					if(item.hasClass('completed')) {
-						todoFunc.updateStatus(id, false);
+						compStatus = false;
 						itemCounter++;
+						checkedCounter--;
 					} else {
-						todoFunc.updateStatus(id, true);
+						compStatus = true;
 						itemCounter--;
+						checkedCounter++;
 					}
-					$('#todo-count .todoCount').text(itemCounter);
+					todoFunc.updateStatus(id, compStatus);
+					footerUpdate.completedUpdate(itemCounter, checkedCounter, compStatus);
+//					$('#todo-count .todoCount').text(itemCounter);
 					item.toggleClass('completed');
 				}
 			});
