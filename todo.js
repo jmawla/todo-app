@@ -42,7 +42,8 @@ $(document).ready(function() {
 				}
 				$('#new-todo').val('');
 //				$('#todo-count .todoCount').text(++itemCounter);
-				footerUpdate.completedUpdate(++itemCounter, checkedCounter, status);
+//				footerUpdate.completedUpdate(++itemCounter, checkedCounter, status);
+				footerUpdate.completedUpdate(++itemCounter, checkedCounter);
 				$('#footer').show();
 		},
 		// save entry into local storage
@@ -80,11 +81,21 @@ $(document).ready(function() {
 				}
 				localStorage.setItem('todos', JSON.stringify(inputStorage));
 			}
+		},
+
+		deleteItem: function(id) {
+			for(var i=0 ; i<inputStorage.length ; i++) {
+				if(inputStorage[i].id == id) {
+					inputStorage.splice(i,1);
+					localStorage.setItem('todos', JSON.stringify(inputStorage));
+				}
+			}
 		}
 	};
 
 	var footerUpdate = {
-		completedUpdate: function(count, chkcount, status) {
+//		completedUpdate: function(count, chkcount, status) {
+		completedUpdate: function(count, chkcount) {
 			$('#todo-count .todoCount').text(count);
 			$('#clear-completed').text('Clear Completed (' + chkcount + ')');
 			if( chkcount>0 ) {
@@ -111,7 +122,7 @@ $(document).ready(function() {
 				console.log('dblclick listener');
 			});
 			//check click
-			$("li[data-id *= '" + id + "']").click(function(e) {
+			$("li[data-id *= '" + id + "']").on('click','.toggle', function(e) {
 				if(e.target.nodeName == "INPUT") {
 					console.log('singleclick listner');
 					var item = $(this).closest('li');
@@ -126,10 +137,27 @@ $(document).ready(function() {
 						checkedCounter++;
 					}
 					todoFunc.updateStatus(id, compStatus);
-					footerUpdate.completedUpdate(itemCounter, checkedCounter, compStatus);
+					footerUpdate.completedUpdate(itemCounter, checkedCounter);
+//					footerUpdate.completedUpdate(itemCounter, checkedCounter, compStatus);
 //					$('#todo-count .todoCount').text(itemCounter);
 					item.toggleClass('completed');
 				}
+			});
+			//x delete click
+			$("li[data-id *= '" + id + "']").on('click','.destroy', function(e) {
+				var item = $(this).closest('li');
+				//itemCounter--;
+				if(item.hasClass('completed')) {
+					checkedCounter--;
+				} else {
+					itemCounter--;
+				}
+				//get the clicked id
+				var id = item.attr('data-id');
+				$("li[data-id *= '" + id + "']").off();
+				item.remove();
+				footerUpdate.completedUpdate(itemCounter, checkedCounter);
+				todoFunc.deleteItem(id);	//remove item from local storage
 			});
 		}
 
