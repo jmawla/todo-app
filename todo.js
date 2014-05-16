@@ -41,8 +41,6 @@ $(document).ready(function() {
 					checkedCounter++;
 				}
 				$('#new-todo').val('');
-//				$('#todo-count .todoCount').text(++itemCounter);
-//				footerUpdate.completedUpdate(++itemCounter, checkedCounter, status);
 				footerUpdate.completedUpdate(++itemCounter, checkedCounter);
 				$('#footer').show();
 		},
@@ -94,7 +92,6 @@ $(document).ready(function() {
 	};
 
 	var footerUpdate = {
-//		completedUpdate: function(count, chkcount, status) {
 		completedUpdate: function(count, chkcount) {
 			$('#todo-count .todoCount').text(count);
 			$('#clear-completed').text('Clear Completed (' + chkcount + ')');
@@ -138,8 +135,6 @@ $(document).ready(function() {
 					}
 					todoFunc.updateStatus(id, compStatus);
 					footerUpdate.completedUpdate(itemCounter, checkedCounter);
-//					footerUpdate.completedUpdate(itemCounter, checkedCounter, compStatus);
-//					$('#todo-count .todoCount').text(itemCounter);
 					item.toggleClass('completed');
 				}
 			});
