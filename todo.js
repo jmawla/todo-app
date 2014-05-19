@@ -25,24 +25,50 @@ $(document).ready(function() {
 		keyPressed: function(e) {
 			if(e.keyCode === CR_KEY) {
 				var entry = $('#new-todo').val();
-				this.saveInput(entry);	// save entry into local storage
+				todoFunc.saveInput(entry);	// save entry into local storage
 			} else if(e.keyCode === ESC_KEY) {
 				console.log('ESC');
 			}
 		},
+		keyEditPressed: function(e, id, thisVar) {
+			if(e.keyCode === CR_KEY) {
+				todoFunc.updateEntry(id, thisVar);
+			} else if(e.keyCode === ESC_KEY) {
+				todoFunc.abortEditing();
+			}
+
+		},
 		// put entry into HTML page
 		addEntry: function(entry, id, status) {
-				$('.newInput li').clone().appendTo('#todo-list');
-				$('#todo-list li:last-child label').text(entry);
-				$('#todo-list li:last-child').attr('data-id',id);
-				if(status) {
-					$('#todo-list li:last-child').addClass('completed');
-					$('#todo-list li:last-child .toggle').attr('checked', true);
-					checkedCounter++;
+			$('.newInput li').clone().appendTo('#todo-list');
+			$('#todo-list li:last-child label').text(entry);
+			$('#todo-list li:last-child').attr('data-id',id);
+			if(status) {
+				$('#todo-list li:last-child').addClass('completed');
+				$('#todo-list li:last-child .toggle').attr('checked', true);
+				checkedCounter++;
+			}
+			$('#new-todo').val('');
+			footerUpdate.completedUpdate(++itemCounter, checkedCounter);
+			$('#footer').show();
+		},
+		// update entry into HTML page
+		updateEntry: function(id, thisVar) {
+			var item = $(this).closest('li input');
+			for( i=0 ; i<inputStorage.length ; i++) {
+				if(inputStorage[i].id === id) {
+					inputStorage[i].name = $('.editing .edit').val();
 				}
-				$('#new-todo').val('');
-				footerUpdate.completedUpdate(++itemCounter, checkedCounter);
-				$('#footer').show();
+			}
+			localStorage.setItem('todos', JSON.stringify(inputStorage));
+			$('.editing label').text($('.editing .edit').val());
+			$('.editing').removeClass('editing').find('.edit').val();
+			thisVar.closest('li input').removeClass('edit');
+			thisVar.closest('li input').remove();
+		},
+		// abort entry editing
+		abortEditing: function() {
+
 		},
 		// save entry into local storage
 		saveInput: function(inputText) {
@@ -56,7 +82,7 @@ $(document).ready(function() {
 			inputStorage.push(todoInput);
 			// Re-serialize the array back into a string and store it in localStorage
 			localStorage.setItem('todos', JSON.stringify(inputStorage));
-			this.addEntry(inputText, getID, status);
+			todoFunc.addEntry(inputText, getID, status);
 			todoListners.addListItemListener(getID);
 		},
 		// reload entries from storage
@@ -64,7 +90,7 @@ $(document).ready(function() {
 			if(localStorage && localStorage.length >0) {
 				inputStorage = JSON.parse(localStorage.getItem("todos"));
 				for(var key=0 ; key < inputStorage.length ; key++) {
-					this.addEntry(inputStorage[key].name, inputStorage[key].id, inputStorage[key].completed);
+					todoFunc.addEntry(inputStorage[key].name, inputStorage[key].id, inputStorage[key].completed);
 					todoListners.addListItemListener(inputStorage[key].id);
 				}
 			} else {
@@ -105,7 +131,7 @@ $(document).ready(function() {
 	};
 
 	var todoListners = {
-		mainInput: function() {
+		mainInputListener: function() {
 			$('#new-todo').keyup(function(e) {
 				todoFunc.keyPressed(e);
 			});
@@ -117,6 +143,15 @@ $(document).ready(function() {
 			//double click
 			$("li[data-id *= '" + id + "']").on('dblclick', 'label', function(event) {
 				console.log('dblclick listener');
+				var item = $(this).closest('li');
+				if(!item.hasClass('completed')) {
+					item.append('<input type=\"text\" name=\"todoEditor\" id=\" \" class=\"edit\">');
+					item.addClass('editing').find('.edit').val($(this).text()).focus();
+					$('.editing .edit').on('keyup', function(e) {
+						//pass $(this) handler to allow keyEditPressed() to remove <input tag
+						todoFunc.keyEditPressed(e, id, $(this));	
+					});
+				}
 			});
 			//check click
 			$("li[data-id *= '" + id + "']").on('click','.toggle', function(e) {
@@ -154,12 +189,16 @@ $(document).ready(function() {
 				footerUpdate.completedUpdate(itemCounter, checkedCounter);
 				todoFunc.deleteItem(id);	//remove item from local storage
 			});
+		},
+		addEditorListener: function() {
+			alert('addEditorListener');
+
 		}
 
 	};
 
 	todoFunc.populateStorage();
-	todoListners.mainInput();
+	todoListners.mainInputListener();
 //	todoListners.oneClick();
 //	todoListners.xClick();
 //	todoListners.doubleClick();
