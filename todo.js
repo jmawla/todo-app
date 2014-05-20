@@ -1,5 +1,6 @@
 $(document).ready(function() {
 	//globals
+	var bool = true;
 	var itemCounter = 0;
 	var checkedCounter = 0;
 	var CR_KEY = 13;
@@ -47,9 +48,13 @@ $(document).ready(function() {
 				$('#todo-list li:last-child').addClass('completed');
 				$('#todo-list li:last-child .toggle').attr('checked', true);
 				checkedCounter++;
+			} else {
+				$('#todo-list li:last-child').removeClass('completed');
+				$('#todo-list li:last-child .toggle').attr('checked', false);
+				itemCounter++;
+				$('#new-todo').val('');
 			}
-			$('#new-todo').val('');
-			footerUpdate.completedUpdate(++itemCounter, checkedCounter);
+			footerUpdate.completedUpdate(itemCounter, checkedCounter);
 			$('#footer').show();
 		},
 		// update entry into HTML page
@@ -87,7 +92,16 @@ $(document).ready(function() {
 		},
 		// reload entries from storage
 		populateStorage: function() {
-			if(localStorage && localStorage.length >0) {
+			inputStorage = JSON.parse(localStorage.getItem("todos"));
+			if(inputStorage.length > 0) {
+				for(var key=0 ; key<inputStorage.length ; key++) {
+					todoFunc.addEntry(inputStorage[key].name, inputStorage[key].id, inputStorage[key].completed);
+					todoListners.addListItemListener(inputStorage[key].id);
+				}
+			} else {
+				$('#footer').hide();
+			}
+/*			if(localStorage && localStorage.length >0) {
 				inputStorage = JSON.parse(localStorage.getItem("todos"));
 				for(var key=0 ; key < inputStorage.length ; key++) {
 					todoFunc.addEntry(inputStorage[key].name, inputStorage[key].id, inputStorage[key].completed);
@@ -95,7 +109,7 @@ $(document).ready(function() {
 				}
 			} else {
 				$('#footer').hide();
-			}
+			}*/
 		},
 
 		updateStatus: function(id, status) {
@@ -107,6 +121,14 @@ $(document).ready(function() {
 			}
 		},
 
+		updateAllStatus: function(status) {
+			for(var i=0 ; i<inputStorage.length ; i++) {
+				inputStorage[i].completed = status;
+			}
+			$('#todo-list li .toggle').attr('checked', status);
+
+		},
+
 		deleteItem: function(id) {
 			for(var i=0 ; i<inputStorage.length ; i++) {
 				if(inputStorage[i].id == id) {
@@ -114,6 +136,27 @@ $(document).ready(function() {
 					localStorage.setItem('todos', JSON.stringify(inputStorage));
 				}
 			}
+		},
+
+		checkAll: function() {
+//			alert('cheveron clicked');
+			if(bool) {
+				$('li').attr('class', 'completed');
+				checkedCounter = itemCounter + checkedCounter;
+				itemCounter = 0;
+				todoFunc.updateAllStatus(true);
+			} else {
+				$('li').attr('class', '');
+				itemCounter = itemCounter + checkedCounter;
+				checkedCounter = 0;
+				todoFunc.updateAllStatus(false);
+			}
+			bool = !bool;
+			footerUpdate.completedUpdate(itemCounter, checkedCounter);
+
+//			for(var i=0 ; i<inputStorage.length ; i++) {
+//				$('li').attr('class', 'completed');
+//			}
 		}
 	};
 
@@ -121,21 +164,28 @@ $(document).ready(function() {
 		completedUpdate: function(count, chkcount) {
 			$('#todo-count .todoCount').text(count);
 			$('#clear-completed').text('Clear Completed (' + chkcount + ')');
-			if( chkcount>0 ) {
-				$('#clear-completed').css({'display':'block'});
-			} else {
+			if( chkcount==0 && count==0) {
 				$('#clear-completed').css({'display':'none'});
+				$('#footer').hide();
+			} else {
+				$('#clear-completed').css({'display':'block'});
 			}
 		}
 
 	};
 
 	var todoListners = {
+		//add listener for main input to add text
 		mainInputListener: function() {
 			$('#new-todo').keyup(function(e) {
 				todoFunc.keyPressed(e);
 			});
-
+		},
+		//add listener to cheveron symbol if clicked all tasks will be checked
+		markAllListener: function() {
+			$('#toggle-all').click(function() {
+				todoFunc.checkAll();
+			});
 		},
 		//add listener to list item based on its id
 		//to take care of double click editing, single click check, and x delete click
@@ -156,7 +206,7 @@ $(document).ready(function() {
 			//check click
 			$("li[data-id *= '" + id + "']").on('click','.toggle', function(e) {
 				if(e.target.nodeName == "INPUT") {
-					console.log('singleclick listner');
+//					console.log('singleclick listner');
 					var item = $(this).closest('li');
 					var compStatus;
 					if(item.hasClass('completed')) {
@@ -199,6 +249,7 @@ $(document).ready(function() {
 
 	todoFunc.populateStorage();
 	todoListners.mainInputListener();
+	todoListners.markAllListener();
 //	todoListners.oneClick();
 //	todoListners.xClick();
 //	todoListners.doubleClick();
