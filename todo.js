@@ -125,7 +125,7 @@ $(document).ready(function() {
 			for(var i=0 ; i<inputStorage.length ; i++) {
 				inputStorage[i].completed = status;
 			}
-			$('#todo-list li .toggle').attr('checked', status);
+			$('#todo-list li .toggle').prop('checked', status);
 
 		},
 
@@ -142,6 +142,7 @@ $(document).ready(function() {
 //			alert('cheveron clicked');
 			if(bool) {
 				$('li').attr('class', 'completed');
+//				$('li').toggleClass('completed');
 				checkedCounter = itemCounter + checkedCounter;
 				itemCounter = 0;
 				todoFunc.updateAllStatus(true);
