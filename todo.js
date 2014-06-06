@@ -5,7 +5,8 @@ $(document).ready(function() {
 	var checkedCounter = 0;
 	var CR_KEY = 13;
 	var ESC_KEY = 27;
-	var inputStorage = [];	//array of objects for storage
+	var inputStorage = new Array;	//array of objects for storage
+	localStorage.setItem('todos', JSON.stringify(inputStorage));
 
 	var todoFunc = {
 		uuid: function () { 
